@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "console app to analyze wow auction data and calculate crafting profits",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
