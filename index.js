@@ -6,6 +6,22 @@ const NAMESPACE = {
   STATIC_EU: "static-eu"
 };
 
+const LOCALE = {
+  en_US: "en_US",
+  es_MX: "es_MX",
+  pt_BR: "pt_BR",
+  en_GB: "en_GB",
+  es_ES: "es_ES",
+  fr_FR: "fr_FR",
+  ru_RU: "ru_RU",
+  de_DE: "de_DE",
+  pt_PT: "pt_PT",
+  it_IT: "it_IT",
+  ko_KR: "ko_KR",
+  zh_TW: "zh_TW",
+  zh_CN: "zh_CN",
+}
+
 const ITEM_CLASS = {
   CONSUMABLE: 0,
   CONTAINER: 1,
@@ -53,14 +69,13 @@ const getAccessToken = async () => {
     password: clientSecret,
     form: {
       grant_type: "client_credentials",
-    },
-    responseType: "json",
+    }
   }).json();
 
   return response;
 }
 
-const getAuctionData = async (accessToken) => {
+const getCommodityAuctions = async (accessToken) => {
   if (!accessToken ) {
     throw new Error(
       "No access token provided. Please authenticate first.",
@@ -68,25 +83,24 @@ const getAuctionData = async (accessToken) => {
   }
 
   const response = await got({
-      url: `${process.env.BNET_API_URL}/data/wow/connected-realm/${process.env.BNET_REALM_ID}/auctions`,
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Battlenet-Namespace': NAMESPACE.DYNAMIC_EU,
-      }
-    })
-    .json();
+    url: `${process.env.BNET_API_URL}/data/wow/auctions/commodities?locale=${LOCALE.en_GB}`,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Battlenet-Namespace": NAMESPACE.DYNAMIC_EU,
+    },
+  }).json();
 
   return response;
 };
 
 const filterAuctions = (auctions, itemIds) => {
-  return auctions.filter((auction) => itemIds.includes(auction.item.id));
+  return auctions.filter(({ item }) => itemIds.includes(item.id));
 };
 
 try {
   const token = await getAccessToken();
-  const auctionData = await getAuctionData(token.access_token);
-  const oreAuctions = filterAuctions(auctionData.auctions, ORE_IDS);
+  const auctions = await getCommodityAuctions(token.access_token);
+  const oreAuctions = filterAuctions(auctions.auctions, ORE_IDS);
   console.log('test');
 } catch (error) {
   console.error("Error fetching access token:", error);
