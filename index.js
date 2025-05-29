@@ -73,7 +73,7 @@ const getAccessToken = async () => {
   }).json();
 
   return response;
-}
+};
 
 const getCommodityAuctions = async (accessToken) => {
   if (!accessToken ) {
@@ -94,7 +94,8 @@ const getCommodityAuctions = async (accessToken) => {
 };
 
 const filterAuctions = (auctions, itemIds) => {
-  return auctions.filter(({ item }) => itemIds.includes(item.id));
+  const filteredAuctions = auctions.filter(({ item }) => itemIds.includes(item.id));
+  return filteredAuctions.sort((a, b) => a.item.id - b.item.id);
 };
 
 try {
@@ -103,6 +104,6 @@ try {
   const oreAuctions = filterAuctions(auctions.auctions, ORE_IDS);
   console.log('test');
 } catch (error) {
-  console.error("Error fetching access token:", error);
+  console.error("Error fetching data:", error);
   throw error;
 }
