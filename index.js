@@ -95,14 +95,36 @@ const getCommodityAuctions = async (accessToken) => {
 
 const filterAuctions = (auctions, itemIds) => {
   const filteredAuctions = auctions.filter(({ item }) => itemIds.includes(item.id));
-  return filteredAuctions.sort((a, b) => a.item.id - b.item.id);
+  const groupedAuctions = Object.groupBy(filteredAuctions, ({ item }) => item.id)
+  const sorted = Object.entries(groupedAuctions).map(([item, auctions]) => {
+    //sort auctions by unit_price
+    const sortedAuctionsByPrice = auctions.sort(
+      (a, b) => a.unit_price - b.unit_price
+    );
+
+    const averagePrice =
+      sortedAuctionsByPrice.reduce((acc, auction) => {
+        if (acc.quantity > 10000) {
+          return acc;
+        }
+        return { quantity: acc.quantity + auction.quantity, price: acc.price + auction.unit_price * auction.quantity };
+      }, { quantity: 0, price: 0 });
+    
+    
+    return {
+      item,
+      auctions: sortedAuctionsByPrice,
+      price: Math.round(averagePrice.price / 10000 / 10000 *100) / 100,
+    };
+  });
+
+  return sorted;
 };
 
 try {
   const token = await getAccessToken();
   const auctions = await getCommodityAuctions(token.access_token);
   const oreAuctions = filterAuctions(auctions.auctions, ORE_IDS);
-  console.log('test');
 } catch (error) {
   console.error("Error fetching data:", error);
   throw error;
